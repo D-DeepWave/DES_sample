@@ -1,12 +1,11 @@
 #include "DES.h"
 #include "BASE.h"
-#include <bits/stdc++.h>
-using namespace std;
 int main()
 {
     string s = "FEDCBA9876543210";
+    string k = "133457799BBCDFF1";
     string p = "0123456789ABCDEF";
-   //cout<<bitset<sizeof(int)>(10)<<endl;
+    string q = "0000000000000000";
     DES d(p);
     cout<<d.encryption(s)<<endl;
     system("pause");

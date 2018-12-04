@@ -102,7 +102,7 @@ string DES::I_Permutation(string s)
         return res;
     }
     for (int i = 0; i < 64; i++)
-        res[initialPermuation[i] - 1] = s[i];
+        res[i] = s[initialPermuation[i] - 1];
     return res;
 }
 /*
@@ -120,13 +120,16 @@ string DES::I_PermutationInverse(string s)
     }
 
     for (int i = 0; i < 64; i++)
-        res[initialPermuationInverse[i] - 1] = s[i];
+        res[i] = s[initialPermuationInverse[i] - 1];
     return res;
 }
 /*
 对结果进行逆初始置换
 */
 
+/*
+圈移位
+*/
 string DES::cylicShift(string s, int k)
 {
     string res;
@@ -144,7 +147,10 @@ string DES::cylicShift(string s, int k)
     return res;
 }
 
-vector<string> DES::keyGeneration(string s)
+/*
+生成密钥
+*/
+vector<string> DES::keyGeneration(string s) //48bit
 {
     vector<string> res;
     string temp;
@@ -152,8 +158,8 @@ vector<string> DES::keyGeneration(string s)
     temp.resize(56, '0');
     for (int i = 0; i < 56; i++)
         temp[i] = s[PC1[i] - 1];
-    L[0] = s.substr(0, 28);
-    D[0] = s.substr(28, 28);
+    L[0] = temp.substr(0, 28);
+    D[0] = temp.substr(28, 28);
     for (int i = 1; i <= 16; i++)
     {
         L[i] = cylicShift(L[i - 1], i);
@@ -169,6 +175,9 @@ vector<string> DES::keyGeneration(string s)
     return res;
 }
 
+/*
+E盒扩展
+*/
 string DES::E_extend(string s)
 {
     string res;
@@ -178,6 +187,9 @@ string DES::E_extend(string s)
     return res;
 }
 
+/*
+P盒移位
+*/
 string DES::P_shift(string s)
 {
     string res;
@@ -187,6 +199,9 @@ string DES::P_shift(string s)
     return res;
 }
 
+/*
+S盒代替
+*/
 string DES::S_replace(string s)
 {
     string res = "", t;
@@ -196,18 +211,24 @@ string DES::S_replace(string s)
         int col = 8 * (s[i + 1] - '0') + 4 * (s[i + 2] - '0') + 2 * (s[i + 3] - '0') + (s[i + 4] - '0');
         int row = 2 * (s[i] - '0') + (s[i + 5] - '0');
         stringstream temp;
-        temp <<bitset<sizeof(int)>(sBox[p][row][col]);
+        temp << bitset<sizeof(int)>(sBox[p][row][col]);
         temp >> t;
         res += t;
     }
     return res;
 }
 
+/*
+feistel函数
+*/
 string DES::feistel(string s, int i)
 {
     return P_shift(S_replace(XOR(E_extend(s), key[i - 1])));
 }
 
+/*
+加密
+*/
 string DES::encryption(string k)
 {
     string s = plaintText;
@@ -215,13 +236,17 @@ string DES::encryption(string k)
     string L[17], R[17];
     L[0] = s.substr(0, 32);
     R[0] = s.substr(32, 32);
+   
+
     key = keyGeneration(SHexToSBin(k));
-    for (int i = 1; i <= 16; i++)
+   
+    for (int i = 1; i <= 16; i++)    //16圈迭代
     {
         R[i] = XOR(L[i - 1], feistel(R[i - 1], i));
         L[i] = R[i - 1];
     }
-    s=""+R[16]+L[16];
+
+    s = "" + R[16] + L[16];
     cipherText = I_PermutationInverse(s);
     return SBinToSHex(cipherText);
 }
