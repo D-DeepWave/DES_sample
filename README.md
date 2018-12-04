@@ -1,2 +1,2 @@
 # DES_sample
-this is an exercise of DES.
+this is an sample of DES.
